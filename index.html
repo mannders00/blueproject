@@ -9,7 +9,10 @@
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.js"></script>
     <style>
 
-      body { margin: 0; padding: 0; }
+      html, body {
+          max-width: 100%;
+          overflow-x: hidden;
+      }
       header {
         position: fixed;
         width: 100%;
@@ -63,21 +66,10 @@
     <script>
 
       var markers = [
-        { id: 1, name: 'Company 1', description: 'This is the very long description of company 1', lng: -87.623177, lat: 41.881832 },
-        { id: 2, name: 'Company 2', description: 'This is the very long description of company 2', lng: -87.633177, lat: 41.891832 },
-        { id: 3, name: 'Company 3', description: 'This is the very long description of company 3', lng: -87.643177, lat: 41.901832 },
-        { id: 4, name: 'Company 4', description: 'This is the very long description of company 4', lng: -87.653177, lat: 41.911832 },
-        { id: 5, name: 'Company 5', description: 'This is the very long description of company 5', lng: -87.663177, lat: 41.921832 },
-        { id: 6, name: 'Company 6', description: 'This is the very long description of company 6', lng: -87.673177, lat: 41.931832 },
-        { id: 7, name: 'Company 7', description: 'This is the very long description of company 7', lng: -87.683177, lat: 41.941832 },
-        { id: 8, name: 'Company 8', description: 'This is the very long description of company 8', lng: -87.693177, lat: 41.951832 },
-        { id: 9, name: 'Company 9', description: 'This is the very long description of company 9', lng: -87.703177, lat: 41.961832 },
-        { id: 10, name: 'Company 10', description: 'This is the very long description of company 10', lng: -87.713177, lat: 41.971832 },
-        { id: 11, name: 'Company 11', description: 'This is the very long description of company 11', lng: -87.723177, lat: 41.981832 },
-        { id: 12, name: 'Company 12', description: 'This is the very long description of company 12', lng: -87.733177, lat: 41.991832 },
-        { id: 13, name: 'Company 13', description: 'This is the very long description of company 13', lng: -87.743177, lat: 41.1001832 },
-        { id: 14, name: 'Company 14', description: 'This is the very long description of company 14', lng: -87.753177, lat: 41.1011832 },
-      ];
+        {{range .}}
+          { id: {{ .ID }}, name: {{ .Name }}, description: {{ .Description }}, lng: {{ .Lng }}, lat: {{ .Lat }} },
+        {{ end }}
+      ]
 
       const cardList = document.getElementById("card-list")
 
@@ -94,8 +86,9 @@
         var popUp = new mapboxgl.Popup({offset: 25}).setHTML("<h3>" + markerData.name + "</h3><p>" + markerData.description + "</p>");
 
         // Create marker object
-        var marker = new mapboxgl.Marker()
-          .setLngLat([markerData.lng, markerData.lat])
+        var marker = new mapboxgl.Marker({
+          color: "#0D6EFD",
+        }).setLngLat([markerData.lng, markerData.lat])
           .setPopup(popUp)
           .addTo(map);
 
