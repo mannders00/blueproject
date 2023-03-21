@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "project_summary": {
+      "type": "object",
+      "properties": {
+        "problem": { "type": "string" },
+        "target_audience": { "type": "string" },
+        "key_features": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "required_support": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "success_indicators": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["problem", "target_audience", "key_features", "required_support", "success_indicators"]
+    },
+    "plan": {
+      "type": "object",
+      "properties": {
+        "goals": {
+          "type": "object",
+          "properties": {
+            "short_term": { "type": "string" },
+            "long_term": { "type": "string" }
+          },
+          "required": ["short_term", "long_term"]
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "duration": { "type": "string" }
+            },
+            "required": ["name", "description", "duration"]
+          }
+        }
+      },
+      "required": ["goals", "tasks"]
+    }
+  },
+  "required": ["project_summary", "plan"]
+}
+`
