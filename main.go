@@ -37,19 +37,12 @@ func boardHandler(w http.ResponseWriter, r *http.Request) {
 
 // GET /board
 func getBoard(w http.ResponseWriter, r *http.Request) {
-
-	tmpl, err := template.ParseFiles("public/html/board.html")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
-	err = tmpl.Execute(w, nil)
+	tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/html/board.html"))
+	err := tmpl.ExecuteTemplate(w, "board.html", nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
-
-// ---
 
 // HTTP /compose
 func composeHandler(w http.ResponseWriter, r *http.Request) {
@@ -63,12 +56,8 @@ func composeHandler(w http.ResponseWriter, r *http.Request) {
 
 // GET /compose
 func getCompose(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("public/html/compose.html")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
-	err = tmpl.Execute(w, nil)
+	tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/html/compose.html"))
+	err := tmpl.ExecuteTemplate(w, "compose.html", nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
