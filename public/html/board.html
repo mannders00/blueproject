@@ -10,19 +10,6 @@
   <link href="https://api.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.css" rel="stylesheet">
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.js"></script>
   <style>
-    html,
-    body {
-      max-width: 100%;
-      overflow-x: hidden;
-    }
-
-    header {
-      position: fixed;
-      width: 100%;
-      pointer-events: all;
-      z-index: 1;
-    }
-
     #map {
       position: fixed;
       top: 0;
@@ -40,9 +27,9 @@
 
     {{ template "header.tmpl" }}
 
-    <div class="container-fluid my-0 p-0" style="pointer-events: none;">
+    <div class="container-fluid" style="pointer-events: none;">
 
-      <div class="row" style="padding-top: 64px;">
+      <div class="row">
         <div class="col-md-4" style="pointer-events: all;">
           <div class="collapse show" id="collapseFilters">
 
@@ -57,7 +44,7 @@
                 </h2>
                 <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show"
                   aria-labelledby="panelsStayOpen">
-                  <div class="accordion-body">
+                  <div class="accordion-body p-0 mt-4">
 
                     <div class="card">
                       <div class="card-body">
@@ -86,7 +73,7 @@
                     </div>
 
 
-                    <div id="card-list">
+                    <div id="card-list" class="p-0 m-0">
 
                     </div>
 
@@ -147,8 +134,8 @@
       // Create Bootstrap card with javascript directly
       const card = document.createElement("div");
       card.classList.add("card");
-      card.classList.add("p-4");
-      card.classList.add("m-4");
+      card.classList.add("py-4");
+      card.classList.add("my-4");
 
       const cardBody = document.createElement("div");
       cardBody.classList.add("card-body");
