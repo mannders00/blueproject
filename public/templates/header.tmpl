@@ -1,13 +1,25 @@
-<header>
-    <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
-        <div class="container d-flex justify-content-between align-items-center">
-        <div>
-            <div class="navbar-nav">
-            <a class="nav-link" href="/board">Board</a>
-            <a class="nav-link" href="/compose">Create</a>
-            </div>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container-fluid">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="/board">Board</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/compose">Create</a>
+        </li>
+      </ul>
+    </div>
+    <a class="navbar-brand" href="#">BlueProject</a>
+    <div class="dropstart">
+        <div class="dropdown text-end">
+            <a href="/profile" class="d-block link-dark text-decoration-none">
+                <img src="https://github.com/mdo.png" alt="mdo" class="rounded-circle" width="32" height="32">
+            </a>
         </div>
-        <a class="navbar-brand" href="#">BlueProject</a>
-        </div>
-    </nav>
-</header>
+    </div>
+  </div>
+</nav>
