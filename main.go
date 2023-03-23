@@ -4,59 +4,87 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-
-	"github.com/labstack/echo/v4"
 )
 
 func main() {
 
-	e := echo.New()
+	mux := http.NewServeMux()
 
-	e.GET("/board", getBoard)
-	e.GET("/compose", getCompose)
-	e.POST("/compose", postCompose)
-	e.Static("/public", "public")
+	mux.HandleFunc("/board", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			getBoard(w, r)
+		}
+	})
+	mux.HandleFunc("/compose", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			getCompose(w, r)
+		case http.MethodPost:
+			postCompose(w, r)
+		}
+	})
+	mux.HandleFunc("/login", getLogin)
+	mux.HandleFunc("/register", getRegister)
+
+	fs := http.FileServer(http.Dir("./public"))
+	mux.Handle("/public/", http.StripPrefix("/public", fs))
 
 	// Initialize Database
 	db := InitDB()
 	fmt.Println(db)
 
-	// Start Server
-	e.Logger.Fatal(e.Start(":8080"))
-
+	// Start Servea
+	fmt.Println("starting on http://localhost:8080")
+	http.ListenAndServe(":8080", mux)
 }
 
 // GET /board
-func getBoard(c echo.Context) error {
+func getBoard(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/html/board.html"))
-	err := tmpl.ExecuteTemplate(c.Response().Writer, "board.html", nil)
+	err := tmpl.ExecuteTemplate(w, "board.html", nil)
 	if err != nil {
-		http.Error(c.Response().Writer, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	return nil
 }
 
 // GET /compose
-func getCompose(c echo.Context) error {
+func getCompose(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/html/compose.html"))
-	err := tmpl.ExecuteTemplate(c.Response().Writer, "compose.html", nil)
+	err := tmpl.ExecuteTemplate(w, "compose.html", nil)
 	if err != nil {
-		http.Error(c.Response().Writer, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	return nil
 }
 
 // POST /compose
-func postCompose(c echo.Context) error {
+func postCompose(w http.ResponseWriter, r *http.Request) {
 
-	problem := c.FormValue("problem")
-	target := c.FormValue("target")
-	features := c.FormValue("features")
-	resources := c.FormValue("resources")
-	success := c.FormValue("success")
+	problem := r.FormValue("problem")
+	target := r.FormValue("target")
+	features := r.FormValue("features")
+	resources := r.FormValue("resources")
+	success := r.FormValue("success")
 
 	//GenerateDetailsFromPrompt(problem, target, features, resources, success)
 	fmt.Println(problem, target, features, resources, success)
-	getCompose(c)
-	return nil
+	getCompose(w, r)
+}
+
+// GET /login
+func getLogin(w http.ResponseWriter, r *http.Request) {
+	tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/html/login.html"))
+	err := tmpl.ExecuteTemplate(w, "login.html", nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+// GET /register
+func getRegister(w http.ResponseWriter, r *http.Request) {
+	tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/html/register.html"))
+	err := tmpl.ExecuteTemplate(w, "register.html", nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
