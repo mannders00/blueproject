@@ -1,18 +1,12 @@
 package main
 
 import (
-	"context"
-	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
-
-	ory "github.com/ory/kratos-client-go"
 )
 
 func main() {
-
-	k := NewMiddleware()
 
 	mux := http.NewServeMux()
 
@@ -24,7 +18,7 @@ func main() {
 			postCompose(w, r)
 		}
 	})
-	mux.HandleFunc("/profile", k.sessionMiddleware(getProfile))
+	mux.HandleFunc("/profile", getProfile)
 	mux.HandleFunc("/login", getLogin)
 	mux.HandleFunc("/register", getRegister)
 
@@ -97,48 +91,4 @@ func getRegister(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-}
-
-type kratosMiddleware struct {
-	ory *ory.APIClient
-}
-
-func NewMiddleware() *kratosMiddleware {
-	configuration := ory.NewConfiguration()
-	configuration.Servers = []ory.ServerConfiguration{
-		{
-			URL: "http://127.0.0.1:4433", // Kratos Public API
-		},
-	}
-	return &kratosMiddleware{
-		ory: ory.NewAPIClient(configuration),
-	}
-}
-func (k *kratosMiddleware) sessionMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		session, err := k.validateSession(r)
-		if err != nil {
-			http.Redirect(w, r, "http://127.0.0.1:8080/login", http.StatusMovedPermanently)
-			return
-		}
-		if !*session.Active {
-			http.Redirect(w, r, "http://your_endpoint", http.StatusMovedPermanently)
-			return
-		}
-		next(w, r)
-	}
-}
-func (k *kratosMiddleware) validateSession(r *http.Request) (*ory.Session, error) {
-	cookie, err := r.Cookie("ory_kratos_session")
-	if err != nil {
-		return nil, err
-	}
-	if cookie == nil {
-		return nil, errors.New("no session found in cookie")
-	}
-	resp, _, err := k.ory.FrontendApi.ToSession(context.Background()).Cookie(cookie.String()).Execute()
-	if err != nil {
-		return nil, err
-	}
-	return resp, nil
 }
