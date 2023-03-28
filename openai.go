@@ -73,7 +73,7 @@ type Task struct {
 	Duration    string `json:"duration"`
 }
 
-func GenerateProjectPlan(problem string, target string, features string, resources string, success string) error {
+func GenerateProjectPlan(problem string, target string, features string, success string) error {
 	fmt.Println("Generating image...")
 	imageResponse, err := generateImageFromPrompt(problem, 3)
 	if err != nil {
@@ -82,7 +82,7 @@ func GenerateProjectPlan(problem string, target string, features string, resourc
 	fmt.Println(imageResponse)
 
 	fmt.Println("Generating plan...")
-	planResponse, err := generateDetailsFromPrompt(problem, target, features, resources, success)
+	planResponse, err := generateDetailsFromPrompt(problem, target, features, success)
 	if err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func generateImageFromPrompt(prompt string, n int) (*ImageResponse, error) {
 
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	url := "https://api.openai.com/v1/images/generations"
-	payload := []byte(fmt.Sprintf(`{"prompt":"A photorealistic depiction of the following project containing only english words: %s.", "n": %d, "size":"512x512"}`, prompt, n))
+	payload := []byte(fmt.Sprintf(`{"prompt":"A photorealistic depiction of the following: %s", "n": %d, "size":"512x512"}`, prompt, n))
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
 	if err != nil {
@@ -125,7 +125,7 @@ func generateImageFromPrompt(prompt string, n int) (*ImageResponse, error) {
 	return &response, nil
 }
 
-func generateDetailsFromPrompt(problem string, target string, features string, resources string, success string) (*PlanResponse, error) {
+func generateDetailsFromPrompt(problem string, target string, features string, success string) (*PlanResponse, error) {
 
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	url := "https://api.openai.com/v1/chat/completions"
@@ -141,13 +141,12 @@ func generateDetailsFromPrompt(problem string, target string, features string, r
 		"problem": %s
 		"target": %s
 		"features": %s
-		"resources": %s
 		"string": %s
 	}
 	Generate a summary of the project with an abstract description, required resources (human, financial, material), and a timeline with tasks and expected completion time, in JSON format.
 	Ensure that the output conforms to the following JSON schema:
 	%s
-	`, problem, target, features, resources, success, schemaString)
+	`, problem, target, features, success, schemaString)
 
 	payload, err := json.Marshal(ChatRequest{
 		Model: "gpt-3.5-turbo",

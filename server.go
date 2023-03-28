@@ -84,9 +84,8 @@ func postCompose(w http.ResponseWriter, r *http.Request) {
 	target := r.FormValue("target")
 	features := r.FormValue("features")
 	resources := r.FormValue("resources")
-	success := r.FormValue("success")
 
-	GenerateProjectPlan(problem, target, features, resources, success)
+	GenerateProjectPlan(problem, target, features, resources)
 	getCompose(w, r)
 }
 
