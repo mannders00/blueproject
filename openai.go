@@ -9,6 +9,13 @@ import (
 	"os"
 )
 
+type ProjectPlan struct {
+	ImageURLS []struct {
+		URL string `json:"url"`
+	} `json:"image_urls"`
+	Project string `json:"project"`
+}
+
 type ImageResponse struct {
 	Created int `json:"created"`
 	Data    []struct {
@@ -73,22 +80,24 @@ type Task struct {
 	Duration    string `json:"duration"`
 }
 
-func GenerateProjectPlan(problem string, target string, features string, success string) error {
-	fmt.Println("Generating image...")
+func GenerateProjectPlan(problem string, target string, features string, success string) (*ProjectPlan, error) {
 	imageResponse, err := generateImageFromPrompt(problem, 3)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	fmt.Println(imageResponse)
 
-	fmt.Println("Generating plan...")
 	planResponse, err := generateDetailsFromPrompt(problem, target, features, success)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	fmt.Println(planResponse)
 
-	return nil
+	projectPlan := ProjectPlan{
+		ImageURLS: imageResponse.Data,
+		Project:   planResponse.Choices[0].Message.Content,
+	}
+
+	return &projectPlan, nil
+
 }
 
 func generateImageFromPrompt(prompt string, n int) (*ImageResponse, error) {

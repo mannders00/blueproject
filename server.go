@@ -45,6 +45,8 @@ func main() {
 	router.HandleFunc("/compose", getCompose).Methods("GET")
 	router.HandleFunc("/compose", postCompose).Methods("POST")
 
+	router.HandleFunc("/project", getProject).Methods("GET")
+
 	router.HandleFunc("/profile", app.sessionMiddleware(app.profileHandler())).Methods("GET")
 
 	router.PathPrefix("/public/").HandlerFunc(serveStatic)
@@ -85,8 +87,22 @@ func postCompose(w http.ResponseWriter, r *http.Request) {
 	features := r.FormValue("features")
 	resources := r.FormValue("resources")
 
-	GenerateProjectPlan(problem, target, features, resources)
+	project, err := GenerateProjectPlan(problem, target, features, resources)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	fmt.Println(project)
+
 	getCompose(w, r)
+}
+
+func getProject(w http.ResponseWriter, r *http.Request) {
+	tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/html/project.html"))
+	err := tmpl.ExecuteTemplate(w, "project.html", nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (app *App) getProfile() http.HandlerFunc {
