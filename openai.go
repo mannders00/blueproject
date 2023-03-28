@@ -26,15 +26,80 @@ type ChatMessage struct {
 	Content string `json:"content"`
 }
 
-func GenerateImageFromPrompt(prompt string, n int) error {
+type PlanResponse struct {
+	ID      string   `json:"id"`
+	Object  string   `json:"object"`
+	Created int64    `json:"created"`
+	Model   string   `json:"model"`
+	Usage   Usage    `json:"usage"`
+	Choices []Choice `json:"choices"`
+}
+type Usage struct {
+	PromptTokens     int `json:"prompt_tokens"`
+	CompletionTokens int `json:"completion_tokens"`
+	TotalTokens      int `json:"total_tokens"`
+}
+type Choice struct {
+	Message      Message `json:"message"`
+	FinishReason string  `json:"finish_reason"`
+	Index        int     `json:"index"`
+}
+type Message struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+type Project struct {
+	ProjectSummary ProjectSummary `json:"project_summary"`
+	Plan           Plan           `json:"plan"`
+}
+type ProjectSummary struct {
+	Problem           string   `json:"problem"`
+	TargetAudience    string   `json:"target_audience"`
+	KeyFeatures       []string `json:"key_features"`
+	RequiredSupport   []string `json:"required_support"`
+	SuccessIndicators []string `json:"success_indicators"`
+}
+type Plan struct {
+	Goals Goals  `json:"goals"`
+	Tasks []Task `json:"tasks"`
+}
+type Goals struct {
+	ShortTerm string `json:"short_term"`
+	LongTerm  string `json:"long_term"`
+}
+type Task struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Duration    string `json:"duration"`
+}
+
+func GenerateProjectPlan(problem string, target string, features string, resources string, success string) error {
+	fmt.Println("Generating image...")
+	imageResponse, err := generateImageFromPrompt(problem, 3)
+	if err != nil {
+		return err
+	}
+	fmt.Println(imageResponse)
+
+	fmt.Println("Generating plan...")
+	planResponse, err := generateDetailsFromPrompt(problem, target, features, resources, success)
+	if err != nil {
+		return err
+	}
+	fmt.Println(planResponse)
+
+	return nil
+}
+
+func generateImageFromPrompt(prompt string, n int) (*ImageResponse, error) {
 
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	url := "https://api.openai.com/v1/images/generations"
-	payload := []byte(fmt.Sprintf(`{"prompt":"%s", "n": %d, "size":"512x512"}`, prompt, n))
+	payload := []byte(fmt.Sprintf(`{"prompt":"A photorealistic depiction of the following project containing only english words: %s.", "n": %d, "size":"512x512"}`, prompt, n))
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiKey))
@@ -42,36 +107,32 @@ func GenerateImageFromPrompt(prompt string, n int) error {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var response ImageResponse
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	fmt.Println(response.Data)
-
-	return nil
+	return &response, nil
 }
 
-func GenerateDetailsFromPrompt(problem string, target string, features string, resources string, success string) error {
-
-	fmt.Println("starting generation of project details..")
+func generateDetailsFromPrompt(problem string, target string, features string, resources string, success string) (*PlanResponse, error) {
 
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	url := "https://api.openai.com/v1/chat/completions"
 
 	schema, err := ioutil.ReadFile("schema.json")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	schemaString := string(schema)
 
@@ -89,19 +150,18 @@ func GenerateDetailsFromPrompt(problem string, target string, features string, r
 	`, problem, target, features, resources, success, schemaString)
 
 	payload, err := json.Marshal(ChatRequest{
-		Model:  "gpt-3.5-turbo",
-		Stream: true,
+		Model: "gpt-3.5-turbo",
 		Messages: []ChatMessage{
 			{Role: "user", Content: message},
 		},
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiKey))
@@ -109,22 +169,17 @@ func GenerateDetailsFromPrompt(problem string, target string, features string, r
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	var response map[string]interface{}
-	err = json.Unmarshal([]byte(body), &response)
-	if err != nil {
-		return err
-	}
+	var planResponse PlanResponse
+	err = json.Unmarshal(body, &planResponse)
 
-	fmt.Println(response)
-
-	return nil
+	return &planResponse, nil
 }

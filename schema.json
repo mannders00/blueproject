@@ -51,4 +51,3 @@
   },
   "required": ["project_summary", "plan"]
 }
-`

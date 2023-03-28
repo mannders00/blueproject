@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	_ "github.com/mattn/go-sqlite3"
 	ory "github.com/ory/client-go"
 )
@@ -24,9 +25,13 @@ const proxyPort = 4000
 
 func main() {
 
+	err := godotenv.Load()
+	if err != nil {
+		panic(err)
+	}
+
 	c := ory.NewConfiguration()
 	c.Servers = ory.ServerConfigurations{{URL: fmt.Sprintf("http://localhost:%d/.ory", proxyPort)}}
-	fmt.Println(c.Servers)
 	app := &App{
 		ory: ory.NewAPIClient(c),
 	}
@@ -81,7 +86,7 @@ func postCompose(w http.ResponseWriter, r *http.Request) {
 	resources := r.FormValue("resources")
 	success := r.FormValue("success")
 
-	fmt.Println(problem, target, features, resources, success)
+	GenerateProjectPlan(problem, target, features, resources, success)
 	getCompose(w, r)
 }
 
