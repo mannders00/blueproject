@@ -9,6 +9,16 @@ import (
 	"os"
 )
 
+type ChatRequest struct {
+	Model    string        `json:"model"`
+	Messages []ChatMessage `json:"messages"`
+	Stream   bool          `json:"stream"`
+}
+type ChatMessage struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
 type ProjectPlan struct {
 	ImageURLS []struct {
 		URL string `json:"url"`
@@ -23,42 +33,11 @@ type ImageResponse struct {
 	} `json:"data"`
 }
 
-type ChatRequest struct {
-	Model    string        `json:"model"`
-	Messages []ChatMessage `json:"messages"`
-	Stream   bool          `json:"stream"`
-}
-type ChatMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
 type PlanResponse struct {
-	ID      string   `json:"id"`
-	Object  string   `json:"object"`
-	Created int64    `json:"created"`
-	Model   string   `json:"model"`
-	Usage   Usage    `json:"usage"`
-	Choices []Choice `json:"choices"`
-}
-type Usage struct {
-	PromptTokens     int `json:"prompt_tokens"`
-	CompletionTokens int `json:"completion_tokens"`
-	TotalTokens      int `json:"total_tokens"`
-}
-type Choice struct {
-	Message      Message `json:"message"`
-	FinishReason string  `json:"finish_reason"`
-	Index        int     `json:"index"`
-}
-type Message struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-type Project struct {
 	ProjectSummary ProjectSummary `json:"project_summary"`
 	Plan           Plan           `json:"plan"`
 }
+
 type ProjectSummary struct {
 	Problem           string   `json:"problem"`
 	TargetAudience    string   `json:"target_audience"`
@@ -66,14 +45,17 @@ type ProjectSummary struct {
 	RequiredSupport   []string `json:"required_support"`
 	SuccessIndicators []string `json:"success_indicators"`
 }
+
 type Plan struct {
 	Goals Goals  `json:"goals"`
 	Tasks []Task `json:"tasks"`
 }
+
 type Goals struct {
 	ShortTerm string `json:"short_term"`
 	LongTerm  string `json:"long_term"`
 }
+
 type Task struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
@@ -86,14 +68,11 @@ func GenerateProjectPlan(problem string, target string, features string, success
 		return nil, err
 	}
 
-	planResponse, err := generateDetailsFromPrompt(problem, target, features, success)
-	if err != nil {
-		return nil, err
-	}
+	//planResponse, err := generateDetailsFromPrompt(problem, target, features, success)
+	generateDetailsFromPrompt(problem, target, features, success)
 
 	projectPlan := ProjectPlan{
 		ImageURLS: imageResponse.Data,
-		Project:   planResponse.Choices[0].Message.Content,
 	}
 
 	return &projectPlan, nil
@@ -153,7 +132,7 @@ func generateDetailsFromPrompt(problem string, target string, features string, s
 		"string": %s
 	}
 	Generate a summary of the project with an abstract description, required resources (human, financial, material), and a timeline with tasks and expected completion time, in JSON format.
-	Ensure that the output conforms to the following JSON schema:
+	Ensure that the output conforms to the following JSON schema (without escape characters in the response):
 	%s
 	`, problem, target, features, success, schemaString)
 
@@ -186,8 +165,38 @@ func generateDetailsFromPrompt(problem string, target string, features string, s
 		return nil, err
 	}
 
-	var planResponse PlanResponse
-	err = json.Unmarshal(body, &planResponse)
+	var response map[string]interface{}
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return nil, err
+	}
 
-	return &planResponse, nil
+	choices, ok := response["choices"].([]interface{})
+	if !ok {
+		fmt.Println("Failure extracting content from OpenAI response.")
+	}
+
+	firstChoice, ok := choices[0].(map[string]interface{})
+	if !ok {
+		fmt.Println("Failure extracting content from OpenAI response.")
+	}
+
+	msg, ok := firstChoice["message"].(map[string]interface{})
+	if !ok {
+		fmt.Println("Failure extracting content from OpenAI response.")
+	}
+
+	content, ok := msg["content"]
+	if !ok {
+		fmt.Println("Failure extracting content from OpenAI response.")
+	}
+
+	var plan PlanResponse
+	err = json.Unmarshal([]byte(content.(string)), &plan)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(plan)
+
+	return &plan, nil
 }

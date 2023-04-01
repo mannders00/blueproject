@@ -18,8 +18,8 @@
 		<section class="py-5 text-center container">
 			<div class="row py-lg-5">
 				<div class="col-lg-6 col-md-8 mx-auto">
-					<h1 class="fw-light">{Project Title.}</h1>
-					<p class="lead text-muted">{Project description.}</p>
+					<h1 class="fw-light">{ Title }</h1>
+					<p class="lead text-muted">{{ .Project.ProjectSummary }}</p>
 					<p class="lead text-muted">Intended for {Target Audience}</p>
 					<p class="lead text-muted">{(hiring|in progress|done)}</p>
 				</div>
@@ -177,7 +177,7 @@
 		</div>
 
 		<div class="container px-4 py-5" id="hanging-icons">
-			<h2 class="pb-2 border-bottom">Success Indiactors</h2>
+			<h2 class="pb-2 border-bottom">Success Indicators</h2>
 
 			<div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
 

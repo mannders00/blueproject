@@ -15,11 +15,12 @@ import (
 	ory "github.com/ory/client-go"
 )
 
-var db *sql.DB
-
 type App struct {
 	ory *ory.APIClient
+	db  *sql.DB
 }
+
+var app App
 
 const proxyPort = 4000
 
@@ -32,8 +33,12 @@ func main() {
 
 	c := ory.NewConfiguration()
 	c.Servers = ory.ServerConfigurations{{URL: fmt.Sprintf("http://localhost:%d/.ory", proxyPort)}}
-	app := &App{
+
+	db := InitDB()
+
+	app = App{
 		ory: ory.NewAPIClient(c),
+		db:  db,
 	}
 
 	router := mux.NewRouter()
@@ -45,7 +50,7 @@ func main() {
 	router.HandleFunc("/compose", getCompose).Methods("GET")
 	router.HandleFunc("/compose", postCompose).Methods("POST")
 
-	router.HandleFunc("/project", getProject).Methods("GET")
+	router.HandleFunc("/project/{id}", getProject()).Methods("GET")
 
 	router.HandleFunc("/profile", app.sessionMiddleware(app.profileHandler())).Methods("GET")
 
@@ -92,16 +97,27 @@ func postCompose(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	fmt.Println(project)
+	app.SaveProject("fake_id", project)
 
 	getCompose(w, r)
 }
 
-func getProject(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/html/project.html"))
-	err := tmpl.ExecuteTemplate(w, "project.html", nil)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+func getProject() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		id := vars["id"]
+
+		project, err := app.LoadProject(id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/html/project.html"))
+		err = tmpl.ExecuteTemplate(w, "project.html", project)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	}
 }
 
