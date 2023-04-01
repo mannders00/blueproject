@@ -40,6 +40,7 @@ type PlanResponse struct {
 
 type ProjectSummary struct {
 	Problem           string   `json:"problem"`
+	Title             string   `json:"title"`
 	TargetAudience    string   `json:"target_audience"`
 	KeyFeatures       []string `json:"key_features"`
 	RequiredSupport   []string `json:"required_support"`
@@ -133,7 +134,7 @@ func generateDetailsFromPrompt(problem string, target string, features string, s
 		"features": %s
 		"string": %s
 	}
-	Generate a summary of the project with an abstract description, required resources (human, financial, material), and a timeline with tasks and expected completion time, in JSON format.
+	Generate a summary of the project with an abstract description, title, required resources (human, financial, material), and a timeline with tasks and expected completion time, in JSON format.
 	Ensure that the output conforms to the following JSON schema (without escape characters in the response):
 	%s
 	`, problem, target, features, success, schemaString)

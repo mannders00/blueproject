@@ -97,9 +97,12 @@ func postCompose(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	app.SaveProject("fake_id", project)
+	unique_id, err := app.SaveProject("fake_id", project)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 
-	getCompose(w, r)
+	http.Redirect(w, r, fmt.Sprintf("/project/%s", unique_id), http.StatusSeeOther)
 }
 
 func getProject() http.HandlerFunc {

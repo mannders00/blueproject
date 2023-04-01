@@ -40,24 +40,24 @@ func InitDB() *sql.DB {
 
 }
 
-func (app *App) SaveProject(user_id string, project *ProjectPlan) error {
+func (app *App) SaveProject(user_id string, project *ProjectPlan) (string, error) {
 
 	data, err := json.Marshal(project)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	unique_id, err := generateRandomString(32)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	_, err = app.db.Exec("INSERT INTO projects (id, user_id, data) VALUES (?, ?, ?)", unique_id, user_id, string(data))
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return unique_id, err
 
 }
 

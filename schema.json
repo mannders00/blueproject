@@ -5,6 +5,7 @@
     "project_summary": {
       "type": "object",
       "properties": {
+        "title": { "type": "string" },
         "problem": { "type": "string" },
         "target_audience": { "type": "string" },
         "key_features": {
@@ -20,7 +21,7 @@
           "items": { "type": "string" }
         }
       },
-      "required": ["problem", "target_audience", "key_features", "required_support", "success_indicators"]
+      "required": ["problem", "title", "target_audience", "key_features", "required_support", "success_indicators"]
     },
     "plan": {
       "type": "object",
