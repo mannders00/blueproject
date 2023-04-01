@@ -23,7 +23,7 @@ type ProjectPlan struct {
 	ImageURLS []struct {
 		URL string `json:"url"`
 	} `json:"image_urls"`
-	Project string `json:"project"`
+	Plan PlanResponse `json:"project"`
 }
 
 type ImageResponse struct {
@@ -68,12 +68,14 @@ func GenerateProjectPlan(problem string, target string, features string, success
 		return nil, err
 	}
 
-	//planResponse, err := generateDetailsFromPrompt(problem, target, features, success)
-	generateDetailsFromPrompt(problem, target, features, success)
+	planResponse, err := generateDetailsFromPrompt(problem, target, features, success)
 
 	projectPlan := ProjectPlan{
 		ImageURLS: imageResponse.Data,
+		Plan:      *planResponse,
 	}
+
+	fmt.Println(projectPlan)
 
 	return &projectPlan, nil
 
@@ -196,7 +198,6 @@ func generateDetailsFromPrompt(problem string, target string, features string, s
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(plan)
 
 	return &plan, nil
 }

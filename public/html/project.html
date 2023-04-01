@@ -19,8 +19,8 @@
 			<div class="row py-lg-5">
 				<div class="col-lg-6 col-md-8 mx-auto">
 					<h1 class="fw-light">{ Title }</h1>
-					<p class="lead text-muted">{{ .Project.ProjectSummary }}</p>
-					<p class="lead text-muted">Intended for {Target Audience}</p>
+					<p class="lead text-muted">{{ .Plan.ProjectSummary.Problem }}</p>
+					<p class="lead text-muted">For {{ .Plan.ProjectSummary.TargetAudience }}</p>
 					<p class="lead text-muted">{(hiring|in progress|done)}</p>
 				</div>
 			</div>
