@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -50,15 +51,14 @@ func main() {
 	router.HandleFunc("/compose", getCompose).Methods("GET")
 	router.HandleFunc("/compose", postCompose).Methods("POST")
 
-	router.HandleFunc("/project/{id}", getProject()).Methods("GET")
+	router.HandleFunc("/project/{id}", getProject).Methods("GET")
 
 	router.HandleFunc("/profile", app.sessionMiddleware(app.profileHandler())).Methods("GET")
 
 	router.PathPrefix("/public/").HandlerFunc(serveStatic)
 
 	fmt.Println("starting on http://localhost:8080")
-	http.ListenAndServe(":8080", router)
-	select {}
+	log.Fatal(http.ListenAndServe(":8080", router))
 }
 
 func getIndex(w http.ResponseWriter, r *http.Request) {
@@ -86,7 +86,6 @@ func getCompose(w http.ResponseWriter, r *http.Request) {
 }
 
 func postCompose(w http.ResponseWriter, r *http.Request) {
-
 	problem := r.FormValue("problem")
 	target := r.FormValue("target")
 	features := r.FormValue("features")
@@ -105,22 +104,20 @@ func postCompose(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, fmt.Sprintf("/project/%s", unique_id), http.StatusSeeOther)
 }
 
-func getProject() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		id := vars["id"]
+func getProject(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
 
-		project, err := app.LoadProject(id)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	project, err := app.LoadProject(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-		tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/html/project.html"))
-		err = tmpl.ExecuteTemplate(w, "project.html", project)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+	tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/html/project.html"))
+	err = tmpl.ExecuteTemplate(w, "project.html", project)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 

@@ -9,6 +9,71 @@ import (
 	"os"
 )
 
+type ProjectPlan struct {
+	ImageURLS []struct {
+		URL string `json:"url"`
+	} `json:"image_urls"`
+	Plan PlanResponse `json:"project"`
+}
+
+func GenerateProjectPlan(problem string, target string, features string, success string) (*ProjectPlan, error) {
+	imageResponse, err := generateImageFromPrompt(problem, 3)
+	if err != nil {
+		return nil, err
+	}
+
+	planResponse, err := generateDetailsFromPrompt(problem, target, features, success)
+
+	projectPlan := ProjectPlan{
+		ImageURLS: imageResponse.Data,
+		Plan:      *planResponse,
+	}
+
+	return &projectPlan, nil
+
+}
+
+type ImageResponse struct {
+	Created int `json:"created"`
+	Data    []struct {
+		URL string `json:"url"`
+	} `json:"data"`
+}
+
+func generateImageFromPrompt(prompt string, n int) (*ImageResponse, error) {
+
+	apiKey := os.Getenv("OPENAI_API_KEY")
+	url := "https://api.openai.com/v1/images/generations"
+	payload := []byte(fmt.Sprintf(`{"prompt":"photorealistic image of %s", "n": %d, "size":"512x512"}`, prompt, n))
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiKey))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var response ImageResponse
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
 type ChatRequest struct {
 	Model    string        `json:"model"`
 	Messages []ChatMessage `json:"messages"`
@@ -17,20 +82,6 @@ type ChatRequest struct {
 type ChatMessage struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
-}
-
-type ProjectPlan struct {
-	ImageURLS []struct {
-		URL string `json:"url"`
-	} `json:"image_urls"`
-	Plan PlanResponse `json:"project"`
-}
-
-type ImageResponse struct {
-	Created int `json:"created"`
-	Data    []struct {
-		URL string `json:"url"`
-	} `json:"data"`
 }
 
 type PlanResponse struct {
@@ -61,59 +112,6 @@ type Task struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Duration    string `json:"duration"`
-}
-
-func GenerateProjectPlan(problem string, target string, features string, success string) (*ProjectPlan, error) {
-	imageResponse, err := generateImageFromPrompt(problem, 3)
-	if err != nil {
-		return nil, err
-	}
-
-	planResponse, err := generateDetailsFromPrompt(problem, target, features, success)
-
-	projectPlan := ProjectPlan{
-		ImageURLS: imageResponse.Data,
-		Plan:      *planResponse,
-	}
-
-	fmt.Println(projectPlan)
-
-	return &projectPlan, nil
-
-}
-
-func generateImageFromPrompt(prompt string, n int) (*ImageResponse, error) {
-
-	apiKey := os.Getenv("OPENAI_API_KEY")
-	url := "https://api.openai.com/v1/images/generations"
-	payload := []byte(fmt.Sprintf(`{"prompt":"A photorealistic depiction of the following: %s", "n": %d, "size":"512x512"}`, prompt, n))
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiKey))
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var response ImageResponse
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	return &response, nil
 }
 
 func generateDetailsFromPrompt(problem string, target string, features string, success string) (*PlanResponse, error) {
