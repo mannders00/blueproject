@@ -56,6 +56,7 @@ func main() {
 	router.HandleFunc("/profile", app.sessionMiddleware(app.profileHandler())).Methods("GET")
 
 	router.PathPrefix("/public/").HandlerFunc(serveStatic)
+	router.PathPrefix("/data/").HandlerFunc(serveStatic)
 
 	fmt.Println("starting on http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", router))
@@ -91,12 +92,18 @@ func postCompose(w http.ResponseWriter, r *http.Request) {
 	features := r.FormValue("features")
 	resources := r.FormValue("resources")
 
-	project, err := GenerateProjectPlan(problem, target, features, resources)
+	unique_id, err := GenerateRandomString(32)
+	// TODO: check if unique_id is unique in database
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	unique_id, err := app.SaveProject("fake_id", project)
+	project, err := GenerateProjectPlan(unique_id, problem, target, features, resources)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	err = app.SaveProject("fake_id", unique_id, project)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -145,6 +152,8 @@ func serveStatic(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/javascript")
 	} else if strings.HasPrefix(path, "/public/images") {
 		w.Header().Set("Content-Type", "image/jpeg")
+	} else if strings.HasPrefix(path, "/data/images") {
+		w.Header().Set("Content-Type", "image/png")
 	}
 
 	http.ServeFile(w, r, filePath)

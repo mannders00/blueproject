@@ -9,7 +9,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func generateRandomString(length int) (string, error) {
+func GenerateRandomString(length int) (string, error) {
 	// Generate random bytes
 	bytes := make([]byte, (length+3)/4*3) // Ensure enough bytes are generated for Base64 encoding
 	_, err := rand.Read(bytes)
@@ -40,25 +40,19 @@ func InitDB() *sql.DB {
 
 }
 
-func (app *App) SaveProject(user_id string, project *ProjectPlan) (string, error) {
+func (app *App) SaveProject(user_id string, unique_id string, project *ProjectPlan) error {
 
 	data, err := json.Marshal(project)
 	if err != nil {
-		return "", err
-	}
-
-	unique_id, err := generateRandomString(32)
-	if err != nil {
-		return "", err
+		return err
 	}
 
 	_, err = app.db.Exec("INSERT INTO projects (id, user_id, data) VALUES (?, ?, ?)", unique_id, user_id, string(data))
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return unique_id, err
-
+	return nil
 }
 
 func (app *App) LoadProject(id string) (*ProjectPlan, error) {
