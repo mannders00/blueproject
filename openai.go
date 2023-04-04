@@ -90,11 +90,9 @@ func generateImageFromPrompt(prompt string, n int, unique_id string) (*ImageResp
 	}
 
 	filePaths, err := getAllFiles(destFolder)
-	for i := 0; i < 3; i++ {
+	for i := 0; i < len(filePaths); i++ {
 		response.Data[i].URL = fmt.Sprintf("/data/%s/images/%s", unique_id, filePaths[i])
 	}
-
-	fmt.Println(response)
 
 	return &response, nil
 }
