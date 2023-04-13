@@ -18,6 +18,12 @@ type User struct {
 	RecoveryTokenExpiration sql.NullTime
 }
 
+type Project struct {
+	ID     string
+	UserID string
+	Plan   ProjectPlan
+}
+
 func InitDB() *sql.DB {
 
 	db, err := sql.Open("sqlite3", "db.db")

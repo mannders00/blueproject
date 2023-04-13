@@ -155,16 +155,59 @@ func getProject(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type ProfilePayload struct {
+	Session  *ory.Session
+	Projects []Project
+}
+
 func (app *App) getProfile() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/html/profile.html"))
 		session := getSession(r.Context())
 		if session == nil {
 			http.Error(w, "session error", http.StatusInternalServerError)
 			return
 		}
+		user_id := session.Identity.Id
 
-		err := tmpl.ExecuteTemplate(w, "profile.html", session)
+		rows, err := app.db.Query("SELECT id, user_id, data FROM projects WHERE user_id = ?", user_id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		defer rows.Close()
+
+		var projects []Project
+
+		for rows.Next() {
+			var ID string
+			var UserID string
+			var PlanStr string
+			if err := rows.Scan(&ID, &UserID, &PlanStr); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+
+			var Plan ProjectPlan
+			err := json.Unmarshal([]byte(PlanStr), &Plan)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+
+			p := Project{
+				ID:     ID,
+				UserID: UserID,
+				Plan:   Plan,
+			}
+
+			projects = append(projects, p)
+		}
+
+		payload := ProfilePayload{
+			Session:  session,
+			Projects: projects,
+		}
+
+		tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/html/profile.html"))
+
+		err = tmpl.ExecuteTemplate(w, "profile.html", payload)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
