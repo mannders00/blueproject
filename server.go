@@ -17,13 +17,11 @@ import (
 )
 
 type App struct {
-	ory *ory.APIClient
 	db  *sql.DB
+	ory *ory.APIClient
 }
 
 var app App
-
-const proxyPort = 4000
 
 func main() {
 
@@ -33,13 +31,11 @@ func main() {
 	}
 
 	c := ory.NewConfiguration()
-	c.Servers = ory.ServerConfigurations{{URL: fmt.Sprintf("http://localhost:%d/.ory", proxyPort)}}
-
-	db := InitDB()
+	c.Servers = ory.ServerConfigurations{{URL: "http://localhost:4433"}}
 
 	app = App{
+		db:  InitDB(),
 		ory: ory.NewAPIClient(c),
-		db:  db,
 	}
 
 	router := mux.NewRouter()
@@ -48,12 +44,13 @@ func main() {
 
 	router.HandleFunc("/board", getBoard).Methods("GET")
 
-	router.HandleFunc("/compose", getCompose).Methods("GET")
-	router.HandleFunc("/compose", postCompose).Methods("POST")
+	router.HandleFunc("/compose", app.sessionMiddleware(app.getCompose())).Methods("GET")
+	router.HandleFunc("/compose", app.sessionMiddleware(app.postCompose())).Methods("POST")
+	router.HandleFunc("/generationStatus", getGenerationStatus).Methods("GET")
 
 	router.HandleFunc("/project/{id}", getProject).Methods("GET")
 
-	router.HandleFunc("/profile", app.sessionMiddleware(app.profileHandler())).Methods("GET")
+	router.HandleFunc("/profile", app.sessionMiddleware(app.getProfile())).Methods("GET")
 
 	router.PathPrefix("/public/").HandlerFunc(serveStatic)
 	router.PathPrefix("/data/").HandlerFunc(serveStatic)
@@ -78,44 +75,74 @@ func getBoard(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getCompose(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/html/compose.html"))
-	err := tmpl.ExecuteTemplate(w, "compose.html", nil)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+func (app *App) getCompose() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/html/compose.html"))
+		err := tmpl.ExecuteTemplate(w, "compose.html", nil)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	}
 }
 
-func postCompose(w http.ResponseWriter, r *http.Request) {
-	problem := r.FormValue("problem")
-	target := r.FormValue("target")
-	features := r.FormValue("features")
-	resources := r.FormValue("resources")
+var taskStatus = make(map[string]string)
 
-	unique_id, err := GenerateRandomString(32)
-	// TODO: check if unique_id is unique in database
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+func (app *App) postCompose() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		session := getSession(r.Context())
+		user_id := session.Identity.Id
+
+		problem := r.FormValue("problem")
+		target := r.FormValue("target")
+		features := r.FormValue("features")
+		success := r.FormValue("success")
+
+		unique_id, err := GenerateRandomString(32)
+		// TODO: check if unique_id is unique in database
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		go func() {
+			project, err := GenerateProjectPlan(unique_id, problem, target, features, success)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+
+			err = SaveProject(app.db, user_id, unique_id, project)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+
+			taskStatus[unique_id] = "completed"
+		}()
+
+		// Return a pending response with the task ID
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "pending",
+			"task_id": unique_id,
+		})
 	}
+}
 
-	project, err := GenerateProjectPlan(unique_id, problem, target, features, resources)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+func getGenerationStatus(w http.ResponseWriter, r *http.Request) {
+	taskID := r.URL.Query().Get("task_id")
+	status := taskStatus[taskID]
 
-	err = app.SaveProject("fake_id", unique_id, project)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
-	http.Redirect(w, r, fmt.Sprintf("/project/%s", unique_id), http.StatusSeeOther)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{
+		"status": status,
+	})
 }
 
 func getProject(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 
-	project, err := app.LoadProject(id)
+	project, err := LoadProject(app.db, id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -130,14 +157,17 @@ func getProject(w http.ResponseWriter, r *http.Request) {
 
 func (app *App) getProfile() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		tmpl := template.Must(template.ParseFiles("public/html/profile.html"))
-		session, err := json.Marshal(getSession(r.Context()))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/html/profile.html"))
+		session := getSession(r.Context())
+		if session == nil {
+			http.Error(w, "session error", http.StatusInternalServerError)
+			return
 		}
-		err = tmpl.ExecuteTemplate(w, "profile.html", string(session))
+
+		err := tmpl.ExecuteTemplate(w, "profile.html", session)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	}
 }
