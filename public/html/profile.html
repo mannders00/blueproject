@@ -15,19 +15,21 @@
 
 		{{ template "header.tmpl" }}
 
-		<div class="container g-4 m-5">
+		<div class="container p-4">
 
 			<h4><b>Logged in as {{if and .Session.Identity .Session.Identity.VerifiableAddresses}} {{(index .Session.Identity.VerifiableAddresses 0).Value}} {{end}}</b></h4>
 			<a class="btn btn-primary mb-4" href="/.ory/self-service/settings/browser">Settings</a>
 			<h4>Projects</h4>
 
 			{{ range .Projects }}
-			<a href="/project/{{ .ID }}">
+			<div class="row">
+				<a href="/project/{{ .ID }}">
 
-				<div class="card mb-4">
-					<div class="card-body"> {{  .Plan.Plan.ProjectSummary.Title }} </div>
-				</div>
-			</a>
+					<div class="card mb-4">
+						<div class="card-body"> {{  .Plan.Plan.ProjectSummary.Title }} </div>
+					</div>
+				</a>
+			</div>
 			{{ end }}
 
 		</div>
