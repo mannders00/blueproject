@@ -7,12 +7,14 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/ory/client-go"
 	ory "github.com/ory/client-go"
 )
 
@@ -31,7 +33,9 @@ func main() {
 	}
 
 	c := ory.NewConfiguration()
-	c.Servers = ory.ServerConfigurations{{URL: "http://localhost:4433"}}
+	c.Servers = client.ServerConfigurations{
+		{URL: fmt.Sprintf("https://%s.projects.oryapis.com", os.Getenv("ORY_PROJECT_SLUG"))},
+	}
 
 	app = App{
 		db:  InitDB(),
@@ -96,6 +100,7 @@ func (app *App) postCompose() http.HandlerFunc {
 		target := r.FormValue("target")
 		features := r.FormValue("features")
 		success := r.FormValue("success")
+		location := r.FormValue("location")
 
 		unique_id, err := GenerateRandomString(32)
 		// TODO: check if unique_id is unique in database
@@ -104,7 +109,7 @@ func (app *App) postCompose() http.HandlerFunc {
 		}
 
 		go func() {
-			project, err := GenerateProjectPlan(unique_id, problem, target, features, success)
+			project, err := GenerateProjectPlan(unique_id, problem, target, features, success, location)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}

@@ -47,65 +47,64 @@
 			</div>
 		</div>
 
-		<div class="bg-light">
-			<div class="container px-4 py-5">
-				<h2 class="pb-2 border-bottom">Goals</h2>
-				<div class="row row-cols-1 row-cols-md-2 align-items-md-center g-5 py-5">
-					<div class="d-flex flex-column align-items-start gap-2">
-						<h3 class="fw-bold">Short Term Goals</h3>
-					</div>
-					<div class="row g-4">
-						<div class="d-flex flex-column gap-2">
-							<p class="fw-normal mb-0">{{ .Plan.Plan.Goals.ShortTerm }}</p>
-							<div
-								class="feature-icon-small d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-4 rounded-3">
-								<svg class="bi" height="0.25em">
-									<use xlink:href="#collection"></use>
-								</svg>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="row row-cols-1 row-cols-md-2 align-items-md-center g-5 py-5">
-					<div class="d-flex flex-column align-items-start gap-2">
-						<h3 class="fw-bold">Long Term Goals</h3>
-					</div>
-					<div class="row g-4">
-						<div class="d-flex flex-column gap-2">
-							<p class="fw-normal mb-0">{{ .Plan.Plan.Goals.LongTerm }}</p>
-							<div
-								class="feature-icon-small d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-4 rounded-3">
-								<svg class="bi" height="0.25em">
-									<use xlink:href="#collection"></use>
-								</svg>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-
 		<div class="container px-4 py-5">
-			<h2 class="pb-2 border-bottom">Tasks</h2>
-			<div class="row  row-cols-1 row-cols-md-2 g-4">
-				{{ range .Plan.Plan.Tasks }}
-				<div class="col">
-					<div class="card">
-						<div class="card-header">
-							{{ .Name }}
-						</div>
-						<div class="card-body">
-							<p class="card-text">{{ .Description }}</p>
-						</div>
-						<div class="card-footer text-muted">
-							Duration: ~{{ .Duration }}
+			<h2 class="pb-2 border-bottom">Goals</h2>
+			<div class="row row-cols-1 row-cols-md-2 align-items-md-center g-5 py-5">
+				<div class="d-flex flex-column align-items-start gap-2">
+					<h3 class="fw-bold">Short Term Goals</h3>
+				</div>
+				<div class="row g-4">
+					<div class="d-flex flex-column gap-2">
+						<p class="fw-normal mb-0">{{ .Plan.Plan.Goals.ShortTerm }}</p>
+						<div
+							class="feature-icon-small d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-4 rounded-3">
+							<svg class="bi" height="0.25em">
+								<use xlink:href="#collection"></use>
+							</svg>
 						</div>
 					</div>
 				</div>
-				{{ end }}
+			</div>
+			<div class="row row-cols-1 row-cols-md-2 align-items-md-center g-5 py-5">
+				<div class="d-flex flex-column align-items-start gap-2">
+					<h3 class="fw-bold">Long Term Goals</h3>
+				</div>
+				<div class="row g-4">
+					<div class="d-flex flex-column gap-2">
+						<p class="fw-normal mb-0">{{ .Plan.Plan.Goals.LongTerm }}</p>
+						<div
+							class="feature-icon-small d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-4 rounded-3">
+							<svg class="bi" height="0.25em">
+								<use xlink:href="#collection"></use>
+							</svg>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 
+		<div class="div bg-light">
+			<div class="container px-4 py-5">
+				<h2 class="pb-2 border-bottom">Tasks</h2>
+				<div class="row  row-cols-1 row-cols-md-2 g-4">
+					{{ range .Plan.Plan.Tasks }}
+					<div class="col">
+						<div class="card">
+							<div class="card-header">
+								{{ .Name }}
+							</div>
+							<div class="card-body">
+								<p class="card-text">{{ .Description }}</p>
+							</div>
+							<div class="card-footer text-muted">
+								Duration: ~{{ .Duration }}
+							</div>
+						</div>
+					</div>
+					{{ end }}
+				</div>
+			</div>
+		</div>
 
 		<div class="container px-4 py-5" id="hanging-icons">
 			<h2 class="pb-2 border-bottom">Expected Features</h2>
