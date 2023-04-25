@@ -31,9 +31,7 @@ func InitDB() *sql.DB {
 		CREATE TABLE IF NOT EXISTS projects (
 			id TEXT PRIMARY KEY UNIQUE,
 			user_id TEXT,
-			data TEXT NOT NULL,
-			lng REAL,
-			lat REAL
+			data TEXT NOT NULL
 		);
 	`)
 	if err != nil {
@@ -63,7 +61,7 @@ func SaveProject(db *sql.DB, user_id string, unique_id string, project *ProjectP
 		return err
 	}
 
-	_, err = db.Exec("INSERT INTO projects (id, user_id, data, lng, lat) VALUES (?, ?, ?, ?, ?)", unique_id, user_id, string(data), project.Location.Lng, project.Location.Lat)
+	_, err = db.Exec("INSERT INTO projects (id, user_id, data) VALUES (?, ?, ?)", unique_id, user_id, string(data))
 	if err != nil {
 		return err
 	}

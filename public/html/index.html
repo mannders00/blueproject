@@ -9,13 +9,54 @@
 		integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
 </head>
 
-<body>
+<body class="bg-light">
 
 	<main>
 
+		{{ template "header.tmpl" }}
+
 		<div class="container">
 
-			<h1>Your session data: {{ . }}</h1>
+			<section class="container my-5">
+				<div class="row">
+					<div class="col-md-6">
+						<h2 class="mb-3">Common Project Management Challenges</h2>
+						<p>Executing successful projects can be a complex and daunting task. Project managers and team
+							members often struggle with defining clear objectives, allocating resources efficiently,
+							managing deadlines, and ensuring smooth collaboration among team members. These challenges
+							can result in delays, cost overruns, and unmet goals.</p>
+					</div>
+					<div class="col-md-6">
+						<h2 class="mb-3">Streamline Your Projects with Our App</h2>
+						<p>Our app, BlueProject, harnesses the power of AI to revolutionize project management. By
+							simply
+							inputting a project description, BlueProject generates tasks, identifies required hires, and
+							outlines other essential requirements to bring your project to fruition. Here's how
+							BlueProject benefits you:</p>
+						<ul>
+							<li><strong>Efficient Task Creation:</strong> Automatically generate tasks, milestones, and
+								deadlines, saving you time and effort.</li>
+							<li><strong>Resource Optimization:</strong> Identify required hires and skillsets, ensuring
+								the right people are assigned to the right tasks.</li>
+							<li><strong>Enhanced Collaboration:</strong> Keep team members on the same page with
+								seamless communication and real-time updates.</li>
+							<li><strong>Improved Decision-Making:</strong> Gain insights into project performance and
+								make data-driven decisions to stay on track.</li>
+						</ul>
+					</div>
+				</div>
+			</section>
+
+			<h1>Examples:</h1>
+
+			<div class="row">
+				<a href="/project/xoONJd6hG2vC35OsmFnEm0h_C21lQ6fJ"> <div class="card mb-4"> <div class="card-body"> Vertical Gardens for Urban Farming </div> </div> </a>
+				<a href="/project/cGrDcVH2q8xJYItopME-FpeQqJaMxNDm"> <div class="card mb-4"> <div class="card-body"> FitQuest </div> </div> </a>
+				<a href="/project/ZJOqAeTHDZaUzLpDSN_gP-TfX_i0xHlS"> <div class="card mb-4"> <div class="card-body"> Decentralized Marketplace for Digital Art and Creative Assets </div> </div> </a>
+				<a href="/project/YnVl6O6qEo8WQ6aKn5pjL6VWvXE_kT8i"> <div class="card mb-4"> <div class="card-body"> Intelligent Energy Management for Residential Buildings </div> </div> </a>
+			</div>
+
+			{{ template "footer.tmpl" }}
 
 		</div>
 

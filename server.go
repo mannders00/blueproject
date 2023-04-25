@@ -64,7 +64,7 @@ func main() {
 }
 
 func getIndex(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/html/index.html"))
+	tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/templates/footer.tmpl", "public/html/index.html"))
 	err := tmpl.ExecuteTemplate(w, "index.html", nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -72,7 +72,7 @@ func getIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 func getBoard(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/html/board.html"))
+	tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/templates/footer.tmpl", "public/html/board.html"))
 	err := tmpl.ExecuteTemplate(w, "board.html", nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -81,7 +81,7 @@ func getBoard(w http.ResponseWriter, r *http.Request) {
 
 func (app *App) getCompose() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/html/compose.html"))
+		tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/templates/footer.tmpl", "public/html/compose.html"))
 		err := tmpl.ExecuteTemplate(w, "compose.html", nil)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -100,7 +100,6 @@ func (app *App) postCompose() http.HandlerFunc {
 		target := r.FormValue("target")
 		features := r.FormValue("features")
 		success := r.FormValue("success")
-		location := r.FormValue("location")
 
 		unique_id, err := GenerateRandomString(32)
 		// TODO: check if unique_id is unique in database
@@ -109,7 +108,7 @@ func (app *App) postCompose() http.HandlerFunc {
 		}
 
 		go func() {
-			project, err := GenerateProjectPlan(unique_id, problem, target, features, success, location)
+			project, err := GenerateProjectPlan(unique_id, problem, target, features, success)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
@@ -153,7 +152,7 @@ func getProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/html/project.html"))
+	tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/templates/footer.tmpl", "public/html/project.html"))
 	err = tmpl.ExecuteTemplate(w, "project.html", project)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -210,7 +209,7 @@ func (app *App) getProfile() http.HandlerFunc {
 			Projects: projects,
 		}
 
-		tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/html/profile.html"))
+		tmpl := template.Must(template.ParseFiles("public/templates/header.tmpl", "public/templates/footer.tmpl", "public/html/profile.html"))
 
 		err = tmpl.ExecuteTemplate(w, "profile.html", payload)
 		if err != nil {

@@ -14,16 +14,13 @@ import (
 )
 
 type ProjectPlan struct {
-	Location  Coords `json:"coords"`
 	ImageURLS []struct {
 		URL string `json:"url"`
 	} `json:"image_urls"`
 	Plan PlanResponse `json:"project"`
 }
 
-func GenerateProjectPlan(unique_id string, problem string, target string, features string, success string, location string) (*ProjectPlan, error) {
-
-	coords := generateCoordsFromPrompt(location)
+func GenerateProjectPlan(unique_id string, problem string, target string, features string, success string) (*ProjectPlan, error) {
 
 	imageResponse, err := generateImageFromPrompt(problem, 3, unique_id)
 	if err != nil {
@@ -33,87 +30,11 @@ func GenerateProjectPlan(unique_id string, problem string, target string, featur
 	planResponse, err := generateDetailsFromPrompt(problem, target, features, success)
 
 	projectPlan := ProjectPlan{
-		Location:  *coords,
 		ImageURLS: imageResponse.Data,
 		Plan:      *planResponse,
 	}
 
 	return &projectPlan, nil
-}
-
-type Coords struct {
-	Lng float64 `json:"lng"`
-	Lat float64 `json:"lat"`
-}
-
-func generateCoordsFromPrompt(location string) *Coords {
-
-	apiKey := os.Getenv("OPENAI_API_KEY")
-	url := "https://api.openai.com/v1/chat/completions"
-
-	message := fmt.Sprint(`
-	Generate longitude and latitude of the following location, providing the middle of the atlantic issue if the location is nonsensical, and return it in the following json format:
-	{ "lng": numeric, "lat": numeric }	`, location)
-
-	payload, err := json.Marshal(ChatRequest{
-		Model: "gpt-3.5-turbo",
-		Messages: []ChatMessage{
-			{Role: "user", Content: message},
-		},
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
-	if err != nil {
-		panic(err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiKey))
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
-	}
-
-	var response map[string]interface{}
-	err = json.Unmarshal(body, &response)
-
-	choices, ok := response["choices"].([]interface{})
-	if !ok {
-		fmt.Println("Failure extracting content from OpenAI response.")
-	}
-
-	firstChoice, ok := choices[0].(map[string]interface{})
-	if !ok {
-		fmt.Println("Failure extracting content from OpenAI response.")
-	}
-
-	msg, ok := firstChoice["message"].(map[string]interface{})
-	if !ok {
-		fmt.Println("Failure extracting content from OpenAI response.")
-	}
-
-	content, ok := msg["content"]
-	if !ok {
-		fmt.Println("Failure extracting content from OpenAI response.")
-	}
-
-	var coords Coords
-	err = json.Unmarshal([]byte(content.(string)), &coords)
-	if err != nil {
-		panic(err)
-	}
-
-	return &coords
 }
 
 type ImageResponse struct {
@@ -127,7 +48,7 @@ func generateImageFromPrompt(prompt string, n int, unique_id string) (*ImageResp
 
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	url := "https://api.openai.com/v1/images/generations"
-	payload := []byte(fmt.Sprintf(`{"prompt":"Create a visually appealing and professional image representing the project concept: '%s', while ensuring there are no foreign texts, disturbing imagery, or scary elements.", "n": %d, "size":"512x512"}`, prompt, n))
+	payload := []byte(fmt.Sprintf(`{"prompt":"Artistic depiction of %s", "n": %d, "size":"512x512"}`, prompt, n))
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
 	if err != nil {
