@@ -18,7 +18,7 @@
 		<div class="container p-4">
 
 			<h4><b>Logged in as {{if and .Session.Identity .Session.Identity.VerifiableAddresses}} {{(index .Session.Identity.VerifiableAddresses 0).Value}} {{end}}</b></h4>
-			<a class="btn btn-primary mb-4" href="/.ory/self-service/settings/browser">Settings</a>
+			<a class="btn btn-primary mb-4" href="/auth/settings">Settings</a>
 			<h1>Projects</h1>
 
 			{{ range .Projects }}
