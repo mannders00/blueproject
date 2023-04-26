@@ -48,7 +48,10 @@
         }
       },
       "required": ["goals", "tasks"]
+    },
+    "image_description": {
+      "type": "string"
     }
   },
-  "required": ["project_summary", "plan"]
+  "required": ["project_summary", "plan", "image_description"]
 }

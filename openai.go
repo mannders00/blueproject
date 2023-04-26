@@ -22,12 +22,12 @@ type ProjectPlan struct {
 
 func GenerateProjectPlan(unique_id string, problem string, target string, features string, success string) (*ProjectPlan, error) {
 
-	imageResponse, err := generateImageFromPrompt(problem, 3, unique_id)
+	planResponse, err := generateDetailsFromPrompt(problem, target, features, success)
+
+	imageResponse, err := generateImageFromPrompt(planResponse.ImageDescription, 3, unique_id)
 	if err != nil {
 		return nil, err
 	}
-
-	planResponse, err := generateDetailsFromPrompt(problem, target, features, success)
 
 	projectPlan := ProjectPlan{
 		ImageURLS: imageResponse.Data,
@@ -48,7 +48,7 @@ func generateImageFromPrompt(prompt string, n int, unique_id string) (*ImageResp
 
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	url := "https://api.openai.com/v1/images/generations"
-	payload := []byte(fmt.Sprintf(`{"prompt":"Artistic depiction of %s", "n": %d, "size":"512x512"}`, prompt, n))
+	payload := []byte(fmt.Sprintf(`{"prompt":"%s", "n": %d, "size":"512x512"}`, prompt, n))
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
 	if err != nil {
@@ -165,8 +165,9 @@ type ChatMessage struct {
 }
 
 type PlanResponse struct {
-	ProjectSummary ProjectSummary `json:"project_summary"`
-	Plan           Plan           `json:"plan"`
+	ProjectSummary   ProjectSummary `json:"project_summary"`
+	Plan             Plan           `json:"plan"`
+	ImageDescription string         `json:"image_description"`
 }
 
 type ProjectSummary struct {
@@ -213,6 +214,7 @@ func generateDetailsFromPrompt(problem string, target string, features string, s
 		"string": %s
 	}
 	Generate a summary of the project with an abstract description, title, required resources (human, financial, material), and a timeline with tasks and expected completion time, in JSON format.
+	Also generate an image_description which creates a DALL-E prompt to create an attractive, modern, and artistic depiction of the project.
 	Ensure that the output conforms to the following JSON schema (without escape characters in the response):
 	%s
 	`, problem, target, features, success, schemaString)
