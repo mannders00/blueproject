@@ -28,8 +28,6 @@ func getSession(ctx context.Context) *ory.Session {
 
 func (app *App) sessionMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		log.Printf("handling middleware request\n")
-
 		// set the cookies on the ory client
 		var cookies string
 
