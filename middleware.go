@@ -44,7 +44,7 @@ func (app *App) sessionMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		session, _, err := app.ory.FrontendApi.ToSession(request.Context()).Cookie(cookies).Execute()
 		if (err != nil && session == nil) || (err == nil && !*session.Active) {
 			// this will redirect the user to the managed Ory Login UI
-			http.Redirect(writer, request, "/.ory/self-service/login/browser", http.StatusSeeOther)
+			http.Redirect(writer, request, "/auth/login", http.StatusSeeOther)
 			return
 		}
 

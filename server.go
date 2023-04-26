@@ -7,7 +7,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -34,8 +33,11 @@ func main() {
 
 	c := ory.NewConfiguration()
 	c.Servers = client.ServerConfigurations{
-		{URL: fmt.Sprintf("https://%s.projects.oryapis.com", os.Getenv("ORY_PROJECT_SLUG"))},
+		{URL: fmt.Sprint("http://localhost:4433")},
 	}
+	//c.Servers = client.ServerConfigurations{
+	//	{URL: fmt.Sprintf("https://%s.projects.oryapis.com", os.Getenv("ORY_PROJECT_SLUG"))},
+	//}
 
 	app = App{
 		db:  InitDB(),
@@ -59,7 +61,7 @@ func main() {
 	router.PathPrefix("/public/").HandlerFunc(serveStatic)
 	router.PathPrefix("/data/").HandlerFunc(serveStatic)
 
-	fmt.Println("starting on http://localhost:8080")
+	fmt.Println("starting on http://:8080")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
 
