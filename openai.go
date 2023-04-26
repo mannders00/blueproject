@@ -214,7 +214,7 @@ func generateDetailsFromPrompt(problem string, target string, features string, s
 		"string": %s
 	}
 	Generate a summary of the project with an abstract description, title, required resources (human, financial, material), and a timeline with tasks and expected completion time, in JSON format.
-	Also generate an image_description which creates a DALL-E prompt to create an attractive, modern, and artistic depiction of the project.
+	Additionally generate an image_description which creates a DALL-E prompt to create a photorealistic and artistic depiction of the project.
 	Ensure that the output conforms to the following JSON schema (without escape characters in the response):
 	%s
 	`, problem, target, features, success, schemaString)
